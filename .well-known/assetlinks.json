@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.gpt_prompt_app.twa",
+        "sha256_cert_fingerprints": ["68:78:A7:BC:F7:E7:25:AC:21:33:64:85:37:0F:DF:94:87:0C:95:BE:8B:21:3C:EA:6F:C4:F0:8D:2D:92:BE:9D"]
+      }
+    }]

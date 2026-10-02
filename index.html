@@ -68,7 +68,7 @@
   .card {
     background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px;
   }
-  .card-body { display: flex; gap: 12px; }
+  .card-body { display: block; }
   .card-text { flex: 1; min-width: 0; }
   .cat {
     flex: none; font-size: 11px; font-weight: 600; color: var(--accent);
@@ -94,13 +94,13 @@
     padding: 4px 0; cursor: pointer;
   }
   .desc { font-size: 13px; color: var(--sub); margin-top: 6px; line-height: 1.45; word-break: break-word; }
-  .thumbs { display: flex; gap: 6px; flex: none; }
-  .thumb { width: 84px; text-align: center; }
+  .thumbs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .thumb { text-align: center; min-width: 0; }
   .thumb img {
-    width: 84px; height: 84px; object-fit: contain; background: var(--code);
-    border-radius: 8px; display: block; border: 1px solid var(--line); cursor: zoom-in;
+    width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: var(--code);
+    border-radius: 10px; display: block; border: 1px solid var(--line); cursor: zoom-in;
   }
-  .thumb span { font-size: 10px; color: var(--sub); }
+  .thumb span { font-size: 11px; color: var(--sub); }
   .actions { display: flex; gap: 6px; margin-top: 10px; }
   .copy {
     flex: 1; border: none; background: var(--accent); color: #fff;
@@ -530,7 +530,7 @@ function renderList() {
   const list = items.filter(i => filterCat === '전체' || (i.category || '미분류') === filterCat);
   if (!items.length) {
     $('list').innerHTML = admin
-      ? `<div class="empty">아직 등록된 프롬프트가 없어요.<br>아래 <b>✏️ 입력</b>에서 추가해 보세요.</div>`
+      ? `<div class="empty">아직 등록된 프롬프트가 없어요.<br>${isWide() ? '왼쪽 입력 칸에서' : '아래 <b>✏️ 입력</b>에서'} 추가해 보세요.</div>`
       : `<div class="empty">아직 등록된 프롬프트가 없어요.</div>`;
     return;
   }

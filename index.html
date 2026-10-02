@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>명령어 보관함</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f5f6fa; --card: #ffffff; --text: #1f2330; --sub: #6b7080;
+    --line: #e3e5ec; --accent: #4f46e5; --accent-soft: #eef0ff; --code: #f0f1f6; --danger: #e5484d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #13151b; --card: #1d2029; --text: #eceef4; --sub: #9aa0b0;
+      --line: #2c303b; --accent: #8b85ff; --accent-soft: #272a45; --code: #262a35; --danger: #ff6b6f;
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: var(--bg); }
+  body {
+    margin: 0 auto; max-width: 480px; min-height: 100vh; background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    -webkit-text-size-adjust: 100%;
+  }
+  body.admin { padding-bottom: calc(env(safe-area-inset-bottom) + 76px); }
+  /* 휴대폰 전용: 화면이 넓으면 가운데에 휴대폰 폭으로 표시 */
+  @media (min-width: 481px) {
+    html { background: #d9dbe3; }
+    body { box-shadow: 0 0 0 1px var(--line), 0 10px 40px rgba(0,0,0,.12); }
+  }
+  .admin-only { display: none !important; }
+  body.admin .admin-only { display: revert !important; }
+  body.admin nav.admin-only { display: flex !important; }
+  .view { display: none; }
+  .view.on { display: block; }
+  header {
+    position: sticky; top: 0; z-index: 5; background: var(--bg);
+    padding: calc(env(safe-area-inset-top) + 16px) 16px 10px;
+  }
+  .head-row { display: flex; align-items: center; gap: 8px; }
+  h1 { font-size: 20px; margin: 0; flex: 1; }
+  .badge {
+    font-size: 11px; font-weight: 700; color: #fff; background: var(--accent);
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .lock {
+    border: 1px solid var(--line); background: var(--card); color: var(--sub);
+    font-size: 12px; padding: 5px 10px; border-radius: 8px; cursor: pointer;
+  }
+  .count { font-size: 13px; color: var(--sub); margin-top: 4px; }
+
+  /* ── 보기 화면 ── */
+  .filter {
+    display: flex; gap: 6px; overflow-x: auto; margin: 12px -16px 0; padding: 0 16px 2px;
+    scrollbar-width: none;
+  }
+  .filter::-webkit-scrollbar { display: none; }
+  .filter .chip { flex: none; padding: 7px 14px; font-size: 14px; background: var(--card); }
+  .filter .chip.on { background: var(--accent); }
+  .filter .chip small { opacity: .7; margin-left: 3px; }
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .title { font-weight: 700; font-size: 16px; flex: 1; min-width: 0; word-break: break-word; }
+  .list { padding: 2px 16px 16px; display: grid; gap: 10px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px;
+  }
+  .card-body { display: flex; gap: 12px; }
+  .card-text { flex: 1; min-width: 0; }
+  .cat {
+    flex: none; font-size: 11px; font-weight: 600; color: var(--accent);
+    background: var(--accent-soft); padding: 2px 8px; border-radius: 6px;
+  }
+  .prompt {
+    font-family: ui-monospace, Menlo, monospace; font-size: 14px; background: var(--code);
+    padding: 6px 8px; border-radius: 8px; white-space: pre-wrap; word-break: break-word;
+    max-height: 7.5em; overflow: hidden; position: relative;
+  }
+  .prompt.long::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2em;
+    background: linear-gradient(transparent, var(--code));
+  }
+  .card.open .prompt { max-height: none; }
+  .card.open .prompt::after { display: none; }
+  .more {
+    display: flex; justify-content: space-between; align-items: center; margin-top: 4px;
+    font-size: 12px; color: var(--sub);
+  }
+  .more button {
+    border: none; background: none; color: var(--accent); font-size: 12px; font-weight: 600;
+    padding: 4px 0; cursor: pointer;
+  }
+  .desc { font-size: 13px; color: var(--sub); margin-top: 6px; line-height: 1.45; word-break: break-word; }
+  .thumbs { display: flex; gap: 6px; flex: none; }
+  .thumb { width: 84px; text-align: center; }
+  .thumb img {
+    width: 84px; height: 84px; object-fit: contain; background: var(--code);
+    border-radius: 8px; display: block; border: 1px solid var(--line); cursor: zoom-in;
+  }
+  .thumb span { font-size: 10px; color: var(--sub); }
+  .actions { display: flex; gap: 6px; margin-top: 10px; }
+  .copy {
+    flex: 1; border: none; background: var(--accent); color: #fff;
+    font-weight: 600; padding: 10px; border-radius: 10px; font-size: 14px; cursor: pointer;
+  }
+  .act {
+    border: 1px solid var(--line); background: transparent; color: var(--sub);
+    padding: 10px 14px; border-radius: 10px; font-size: 14px; cursor: pointer;
+  }
+  .act.del { color: var(--danger); border-color: var(--danger); }
+  .empty { text-align: center; color: var(--sub); padding: 48px 0; font-size: 14px; line-height: 1.6; }
+  .foot { text-align: center; padding: 8px 0 20px; }
+  .foot button {
+    border: none; background: none; color: var(--sub); opacity: .6; font-size: 12px; padding: 8px; cursor: pointer;
+  }
+
+  /* ── 입력 화면 ── */
+  form, .sheet-card {
+    margin: 0 16px 24px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 16px;
+  }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+  label:first-child { margin-top: 0; }
+  .opt { font-weight: 400; color: var(--sub); }
+  input[type=text], input[type=password], textarea {
+    width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--text); font-size: 16px; font-family: inherit;
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  textarea { resize: vertical; line-height: 1.5; }
+  #fPrompt { min-height: 120px; max-height: 60vh; font-family: ui-monospace, Menlo, monospace; font-size: 15px; }
+  .len { font-size: 12px; color: var(--sub); text-align: right; margin-top: 4px; }
+  #fDesc { min-height: 70px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip {
+    border: 1px solid var(--line); background: transparent; color: var(--sub);
+    padding: 5px 12px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .img-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .img-label { font-size: 12px; color: var(--sub); margin-bottom: 4px; text-align: center; }
+  .img-box {
+    border: 2px dashed var(--line); border-radius: 12px; aspect-ratio: 1; padding: 6px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    color: var(--sub); font-size: 13px; cursor: pointer; position: relative; overflow: hidden;
+  }
+  .img-box.filled { border-style: solid; padding: 0; }
+  .img-box img { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--code); }
+  .img-del {
+    position: absolute; top: 8px; right: 8px; border: none; background: rgba(0,0,0,.6);
+    color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 16px; cursor: pointer;
+  }
+  .form-btns { display: flex; gap: 8px; margin-top: 22px; }
+  .save {
+    flex: 2; padding: 14px; border: none; border-radius: 12px;
+    background: var(--accent); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+  }
+  .save:disabled { opacity: .6; }
+  .cancel {
+    flex: 1; padding: 14px; border: 1px solid var(--line); border-radius: 12px;
+    background: transparent; color: var(--text); font-size: 16px; cursor: pointer;
+  }
+  .editing-note {
+    margin: 0 16px 10px; padding: 10px 12px; border-radius: 10px; font-size: 13px;
+    background: var(--accent-soft); color: var(--accent);
+  }
+
+  /* ── 관리자 로그인 ── */
+  .overlay {
+    position: fixed; inset: 0; z-index: 25; background: rgba(0,0,0,.5); display: none;
+    align-items: flex-end; justify-content: center;
+  }
+  .overlay.show { display: flex; }
+  .sheet {
+    width: 100%; max-width: 480px; background: var(--bg); border-radius: 18px 18px 0 0;
+    padding: 18px 0 calc(env(safe-area-inset-bottom) + 10px); max-height: 92vh; overflow-y: auto;
+  }
+  .sheet h2 { font-size: 17px; margin: 0 16px 6px; }
+  .sheet .help { font-size: 13px; color: var(--sub); line-height: 1.5; margin: 0 16px 12px; }
+  .sheet .help a { color: var(--accent); }
+
+  /* ── 아래 탭 (관리자만) ── */
+  nav {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 10;
+    width: 100%; max-width: 480px;
+    background: var(--card); border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  nav button {
+    flex: 1; border: none; background: transparent; color: var(--sub); padding: 10px 0 12px;
+    font-size: 12px; cursor: pointer;
+  }
+  nav button b { display: block; font-size: 20px; font-weight: 400; margin-bottom: 2px; }
+  nav button.on { color: var(--accent); font-weight: 700; }
+
+  /* ── 이미지 크게 보기 ── */
+  .viewer {
+    position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,.9); display: none;
+    flex-direction: column; align-items: center; justify-content: center; padding: 16px;
+  }
+  .viewer.show { display: flex; }
+  .viewer img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; }
+  .viewer p { color: #fff; font-size: 14px; margin: 0 0 10px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 84px);
+    transform: translateX(-50%); background: #222; color: #fff; padding: 10px 18px;
+    border-radius: 18px; font-size: 14px; line-height: 1.4; opacity: 0; transition: opacity .2s; pointer-events: none;
+    z-index: 40; width: max-content; max-width: calc(100% - 48px); text-align: center; word-break: keep-all;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── PC 관리자 작업 화면: 왼쪽 입력 / 오른쪽 목록 ── */
+  .pc-hint { display: none; }
+  .img-box.drag { border-color: var(--accent); background: var(--accent-soft); }
+  @media (min-width: 900px) {
+    body.admin {
+      max-width: 1320px; display: grid; grid-template-columns: 460px minmax(0, 1fr);
+      align-items: start; padding-bottom: 20px;
+    }
+    body.admin #viewInput {
+      display: block; order: 1; position: sticky; top: 0; max-height: 100vh; overflow-y: auto;
+      border-right: 1px solid var(--line);
+    }
+    body.admin #viewList { display: block; order: 2; }
+    body.admin nav.admin-only { display: none !important; }
+    body.admin .list { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); align-items: start; }
+    body.admin .pc-hint { display: block; font-size: 12px; color: var(--sub); margin: 6px 0 0; line-height: 1.5; }
+    body.admin .toast { bottom: 24px; }
+    body.admin .card.editing { outline: 2px solid var(--accent); }
+  }
+</style>
+</head>
+<body>
+
+<!-- 보기 화면 (모두) -->
+<section class="view on" id="viewList">
+  <header>
+    <div class="head-row">
+      <h1>📋 명령어 보관함</h1>
+      <span class="badge admin-only">관리자</span>
+      <button class="lock admin-only" id="lockBtn">잠그기</button>
+    </div>
+    <div class="filter" id="filter"></div>
+  </header>
+  <div class="list" id="list"><div class="empty">불러오는 중…</div></div>
+  <div class="foot" id="foot"><button id="adminBtn">🔒 관리자</button></div>
+</section>
+
+<!-- 입력 화면 (관리자만) -->
+<section class="view" id="viewInput">
+  <header>
+    <div class="head-row">
+      <h1 id="inputTitle">✏️ 프롬프트 입력</h1>
+      <span class="badge">관리자</span>
+    </div>
+    <div class="count" id="count">등록된 프롬프트 0개</div>
+  </header>
+  <div class="editing-note" id="editNote" hidden>등록된 프롬프트를 수정하고 있어요</div>
+  <form id="form" autocomplete="off">
+    <label for="fTitle">제목</label>
+    <input type="text" id="fTitle" placeholder="예: 사람처럼 답변하기">
+
+    <label for="fCat">분류</label>
+    <input type="text" id="fCat" placeholder="예: 답변, 이미지">
+    <div class="chips" id="catChips"></div>
+
+    <label for="fPrompt">프롬프트</label>
+    <textarea id="fPrompt" placeholder="예: /human"></textarea>
+    <div class="len" id="fLen">0자</div>
+
+    <label for="fDesc">설명</label>
+    <textarea id="fDesc" placeholder="예: 사람처럼 자연스럽게"></textarea>
+
+    <label>참고이미지 <span class="opt">(선택)</span></label>
+    <div class="img-row">
+      <div class="img-col">
+        <div class="img-label">원본</div>
+        <div class="img-box" data-slot="before"></div>
+      </div>
+      <div class="img-col">
+        <div class="img-label">결과</div>
+        <div class="img-box" data-slot="after"></div>
+      </div>
+    </div>
+    <input type="file" id="fImg" accept="image/*" hidden>
+    <p class="pc-hint">💡 이미지를 칸에 <b>끌어다 놓거나</b>, 칸에 마우스를 올리고 <b>Ctrl+V</b>로 붙여넣을 수 있어요.</p>
+
+    <div class="form-btns">
+      <button type="button" class="cancel" id="cancelEdit" hidden>취소</button>
+      <button type="submit" class="save" id="saveBtn">저장하기</button>
+    </div>
+    <p class="pc-hint" style="text-align:center">Ctrl+Enter로 바로 저장</p>
+  </form>
+</section>
+
+<nav class="admin-only">
+  <button class="on" data-view="viewList"><b>📋</b>보기</button>
+  <button data-view="viewInput"><b>✏️</b>입력</button>
+</nav>
+
+<!-- 관리자 로그인 -->
+<div class="overlay" id="loginOv">
+  <div class="sheet">
+    <h2>🔒 관리자 모드</h2>
+    <p class="help">관리자만 프롬프트를 등록·수정·삭제할 수 있어요. GitHub 토큰은 <b>이 휴대폰에만</b> 저장되고 다른 사람에게는 전달되지 않아요.</p>
+    <form id="loginForm" autocomplete="off">
+      <label for="lOwner">GitHub 아이디</label>
+      <input type="text" id="lOwner" placeholder="예: sehae" autocapitalize="off" spellcheck="false">
+      <label for="lRepo">저장소 이름</label>
+      <input type="text" id="lRepo" value="gpt-prompt-app" autocapitalize="off" spellcheck="false">
+      <label for="lToken">GitHub 토큰</label>
+      <input type="password" id="lToken" placeholder="github_pat_…" autocapitalize="off" spellcheck="false">
+      <div class="form-btns">
+        <button type="button" class="cancel" id="loginCancel">취소</button>
+        <button type="submit" class="save" id="loginBtn">관리자 모드 켜기</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="viewer" id="viewer"><p id="viewerLabel"></p><img id="viewerImg" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const DATA_PATH = 'data/prompts.json';     // 저장소 안의 데이터 파일
+const IMG_DIR = 'data/images';             // 저장소 안의 이미지 폴더
+const ADMIN_KEY = 'prompt-vault-admin';    // 관리자 정보 (관리자 휴대폰에만 저장)
+const GH_API = 'https://api.github.com';
+
+let items = [];
+let admin = null;         // { owner, repo, branch, token }
+const imgCache = {};      // 방금 올린 이미지 / GitHub에서 받은 이미지 임시 보관
+
+function toast(msg, ms = 1800) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms);
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+// ════════ GitHub 연결 (관리자만 사용) ════════
+const GH = {
+  async req(path, { method = 'GET', body, raw } = {}) {
+    const res = await fetch(`${GH_API}/repos/${admin.owner}/${admin.repo}${path}`, {
+      method,
+      cache: 'no-store',
+      headers: {
+        Authorization: `Bearer ${admin.token}`,
+        Accept: raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(body && { 'Content-Type': 'application/json' })
+      },
+      ...(body && { body: JSON.stringify(body) })
+    });
+    if (!res.ok) { const e = new Error('GitHub ' + res.status); e.status = res.status; throw e; }
+    return raw === 'blob' ? res.blob() : raw ? res.text() : res.json();
+  },
+  async readItems(ref) {
+    try {
+      const text = await this.req(`/contents/${DATA_PATH}?ref=${encodeURIComponent(ref)}`, { raw: true });
+      return JSON.parse(text).items || [];
+    } catch (e) {
+      if (e.status === 404) return [];
+      throw e;
+    }
+  },
+  // 데이터 파일 + 이미지들을 커밋 한 번으로 저장
+  // change(최신목록) → { items, files: [{path, base64}], deletes: [path] }
+  async commit(message, change) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const ref = await this.req(`/git/ref/heads/${admin.branch}`);
+      const head = ref.object.sha;
+      const headCommit = await this.req(`/git/commits/${head}`);
+      const current = await this.readItems(head);
+      const { items: next, files = [], deletes = [] } = change(current);
+
+      const tree = [];
+      for (const f of files) {
+        const blob = await this.req('/git/blobs', { method: 'POST', body: { content: f.base64, encoding: 'base64' } });
+        tree.push({ path: f.path, mode: '100644', type: 'blob', sha: blob.sha });
+      }
+      tree.push({
+        path: DATA_PATH, mode: '100644', type: 'blob',
+        content: JSON.stringify({ version: 1, updated: new Date().toISOString(), items: next }, null, 1)
+      });
+      deletes.forEach(p => tree.push({ path: p, mode: '100644', type: 'blob', sha: null }));
+
+      const newTree = await this.req('/git/trees', { method: 'POST', body: { base_tree: headCommit.tree.sha, tree } });
+      const newCommit = await this.req('/git/commits', { method: 'POST', body: { message, tree: newTree.sha, parents: [head] } });
+      try {
+        await this.req(`/git/refs/heads/${admin.branch}`, { method: 'PATCH', body: { sha: newCommit.sha } });
+        return next;
+      } catch (e) {
+        if (e.status !== 422 || attempt === 2) throw e;   // 다른 기기에서 동시에 저장한 경우 다시 시도
+      }
+    }
+  }
+};
+
+function ghError(e) {
+  if (e.status === 401) return '토큰이 틀렸거나 만료됐어요. 관리자 모드를 다시 켜 주세요';
+  if (e.status === 403 || e.status === 404) return '저장소에 쓸 권한이 없어요. 토큰 권한을 확인해 주세요';
+  if (!navigator.onLine) return '인터넷 연결을 확인해 주세요';
+  return '저장에 실패했어요. 잠시 후 다시 해 주세요';
+}
+
+// ════════ 데이터 불러오기 ════════
+async function load() {
+  try {
+    if (admin) {
+      items = await GH.readItems(admin.branch);               // 관리자: GitHub에서 바로 (최신)
+    } else {
+      const res = await fetch(DATA_PATH, { cache: 'no-cache' }); // 사용자: 앱과 함께 배포된 파일
+      if (!res.ok) throw new Error(res.status);
+      items = (await res.json()).items || [];
+    }
+  } catch (e) {
+    if (!items.length) {
+      $('list').innerHTML = `<div class="empty">목록을 불러오지 못했어요.<br>인터넷 연결을 확인해 주세요.</div>`;
+      return;
+    }
+  }
+  items.sort((a, b) => b.id - a.id);
+  render();
+}
+
+function render() {
+  $('count').textContent = `등록된 프롬프트 ${items.length}개`;
+  renderCatChips();
+  renderFilter();
+  renderList();
+}
+
+// ════════ 관리자 모드 ════════
+function loadAdmin() {
+  try { admin = JSON.parse(localStorage.getItem(ADMIN_KEY)); } catch (e) { admin = null; }
+  if (admin && !(admin.owner && admin.repo && admin.token)) admin = null;
+  applyMode();
+}
+function applyMode() {
+  document.body.classList.toggle('admin', !!admin);
+  $('foot').hidden = !!admin;
+  if (!admin) goTo('viewList');
+}
+
+$('adminBtn').onclick = () => {
+  $('loginOv').classList.add('show');
+  setTimeout(() => $('lOwner').focus(), 50);
+};
+$('loginCancel').onclick = () => $('loginOv').classList.remove('show');
+$('loginOv').onclick = e => { if (e.target === $('loginOv')) $('loginOv').classList.remove('show'); };
+
+$('loginForm').onsubmit = async e => {
+  e.preventDefault();
+  const owner = $('lOwner').value.trim(), repo = $('lRepo').value.trim(), token = $('lToken').value.trim();
+  if (!owner || !repo || !token) { toast('세 칸을 모두 입력해 주세요'); return; }
+  $('loginBtn').disabled = true; $('loginBtn').textContent = '확인 중…';
+  try {
+    const res = await fetch(`${GH_API}/repos/${owner}/${repo}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' }, cache: 'no-store'
+    });
+    if (res.status === 401) throw new Error('토큰이 올바르지 않아요');
+    if (res.status === 404) throw new Error('저장소를 찾을 수 없어요. 아이디·저장소 이름·토큰 권한을 확인해 주세요');
+    if (!res.ok) throw new Error('확인에 실패했어요 (' + res.status + ')');
+    const info = await res.json();
+    if (!info.permissions || !info.permissions.push) throw new Error('이 토큰으로는 저장소에 쓸 수 없어요 (Contents 쓰기 권한 필요)');
+    admin = { owner, repo, branch: info.default_branch || 'main', token };
+    try { localStorage.setItem(ADMIN_KEY, JSON.stringify(admin)); } catch (_) {}
+    $('lToken').value = '';
+    $('loginOv').classList.remove('show');
+    applyMode();
+    toast('관리자 모드가 켜졌어요 ✅');
+    load();
+  } catch (err) {
+    toast(err.message.startsWith('Failed') ? '인터넷 연결을 확인해 주세요' : err.message, 3000);
+  } finally {
+    $('loginBtn').disabled = false; $('loginBtn').textContent = '관리자 모드 켜기';
+  }
+};
+
+$('lockBtn').onclick = () => {
+  if (!confirm('관리자 모드를 끌까요?\n다시 켜려면 토큰을 다시 입력해야 해요.')) return;
+  try { localStorage.removeItem(ADMIN_KEY); } catch (_) {}
+  admin = null;
+  resetForm(true);
+  applyMode();
+  toast('관리자 모드를 껐어요');
+  load();
+};
+
+// ── 아래 탭 (관리자만) ──
+const isWide = () => !!admin && matchMedia('(min-width: 900px)').matches;   // PC 작업 화면
+function goTo(viewId) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.view === viewId));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === viewId));
+  if (isWide()) { if (viewId === 'viewInput') $('viewInput').scrollTop = 0; }
+  else window.scrollTo(0, 0);
+  markLong();
+}
+document.querySelector('nav').onclick = e => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  goTo(btn.dataset.view);
+};
+
+// ════════ 보기 화면 ════════
+let filterCat = '전체';
+
+function renderFilter() {
+  const counts = {};
+  items.forEach(i => { const c = i.category || '미분류'; counts[c] = (counts[c] || 0) + 1; });
+  const cats = Object.keys(counts).sort();
+  if (filterCat !== '전체' && !counts[filterCat]) filterCat = '전체';
+  $('filter').innerHTML = [['전체', items.length], ...cats.map(c => [c, counts[c]])]
+    .map(([c, n]) => `<button class="chip ${c === filterCat ? 'on' : ''}" data-cat="${esc(c)}">${esc(c)}<small>${n}</small></button>`)
+    .join('');
+}
+$('filter').onclick = e => {
+  const btn = e.target.closest('.chip'); if (!btn) return;
+  filterCat = btn.dataset.cat;
+  renderFilter(); renderList();
+};
+
+const imgSrc = path => imgCache[path] || path;
+
+function renderList() {
+  const list = items.filter(i => filterCat === '전체' || (i.category || '미분류') === filterCat);
+  if (!items.length) {
+    $('list').innerHTML = admin
+      ? `<div class="empty">아직 등록된 프롬프트가 없어요.<br>아래 <b>✏️ 입력</b>에서 추가해 보세요.</div>`
+      : `<div class="empty">아직 등록된 프롬프트가 없어요.</div>`;
+    return;
+  }
+  $('list').innerHTML = list.map(i => {
+    const thumbs = [['imageBefore', '원본'], ['imageAfter', '결과']]
+      .filter(([k]) => i[k])
+      .map(([k, label]) => `<div class="thumb"><img src="${esc(imgSrc(i[k]))}" data-path="${esc(i[k])}" alt="${label}" data-zoom data-label="${label}" onerror="fixImg(this)"><span>${label}</span></div>`)
+      .join('');
+    return `
+    <div class="card" data-id="${i.id}">
+      <div class="card-head">
+        <div class="title">${esc(i.title || String(i.prompt).split('\n')[0])}</div>
+        ${i.category ? `<span class="cat">${esc(i.category)}</span>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-text">
+          <div class="prompt">${esc(i.prompt)}</div>
+          <div class="more"><span>${String(i.prompt).length.toLocaleString()}자</span><button type="button" data-more hidden>전체 보기 ▾</button></div>
+          ${i.desc ? `<div class="desc">${esc(i.desc)}</div>` : ''}
+        </div>
+        ${thumbs ? `<div class="thumbs">${thumbs}</div>` : ''}
+      </div>
+      <div class="actions">
+        <button class="copy" data-copy>복사하기</button>
+        ${admin ? `<button class="act" data-edit>수정</button><button class="act del" data-del>삭제</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  markLong();
+  highlightEditing();
+}
+
+// 아직 배포되지 않은 새 이미지는 관리자 화면에서 GitHub에서 직접 받아 보여주기
+function fixImg(el) {
+  const path = el.dataset.path;
+  if (!admin || !path || el.dataset.tried) return;
+  el.dataset.tried = '1';
+  GH.req(`/contents/${path}?ref=${encodeURIComponent(admin.branch)}`, { raw: 'blob' })
+    .then(b => { imgCache[path] = URL.createObjectURL(b); el.src = imgCache[path]; })
+    .catch(() => {});
+}
+
+// 화면에서 잘리는 긴 프롬프트에만 '전체 보기' 버튼 표시
+function markLong() {
+  if (!$('list').offsetParent) return;   // 목록이 화면에 보일 때만 계산
+  $('list').querySelectorAll('.card:not(.open)').forEach(card => {
+    const p = card.querySelector('.prompt');
+    const long = p.scrollHeight > p.clientHeight + 2;
+    p.classList.toggle('long', long);
+    card.querySelector('[data-more]').hidden = !long;
+  });
+}
+
+$('list').onclick = e => {
+  const card = e.target.closest('.card'); if (!card) return;
+  const item = items.find(i => i.id === Number(card.dataset.id));
+  const d = e.target.dataset;
+  if (d.copy !== undefined) copyText(item.prompt);
+  if (d.edit !== undefined) startEdit(item);
+  if (d.del !== undefined) deleteItem(item);
+  if (d.more !== undefined) {
+    const open = card.classList.toggle('open');
+    e.target.textContent = open ? '접기 ▴' : '전체 보기 ▾';
+  }
+  if (d.zoom !== undefined) {
+    $('viewerImg').src = e.target.src;
+    $('viewerLabel').textContent = d.label;
+    $('viewer').classList.add('show');
+  }
+};
+$('viewer').onclick = () => $('viewer').classList.remove('show');
+
+// 길이에 상관없이 프롬프트 전체를 복사
+async function copyText(text) {
+  let done = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    done = true;
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.readOnly = true;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select(); ta.setSelectionRange(0, text.length);
+    try { done = document.execCommand('copy'); } catch (_) {}
+    ta.remove();
+  }
+  toast(done ? `${text.length.toLocaleString()}자 전체 복사했어요 ✅` : '복사에 실패했어요. 다시 눌러 주세요');
+}
+
+// ════════ 입력 화면 (관리자) ════════
+const images = { before: null, after: null };  // 각 칸: null | {path} (이미 저장됨) | {dataUrl} (새로 올림)
+let pickingSlot = null;
+let editingId = null;
+let busy = false;
+
+function fitPrompt() {
+  const t = $('fPrompt');
+  t.style.height = 'auto';
+  t.style.height = t.scrollHeight + 2 + 'px';
+  $('fLen').textContent = `${t.value.length.toLocaleString()}자`;
+}
+$('fPrompt').addEventListener('input', fitPrompt);
+
+function renderCatChips() {
+  const cats = [...new Set(items.map(i => i.category).filter(Boolean))];
+  $('catChips').innerHTML = cats.map(c =>
+    `<button type="button" class="chip ${c === $('fCat').value.trim() ? 'on' : ''}">${esc(c)}</button>`).join('');
+}
+$('catChips').onclick = e => {
+  if (!e.target.classList.contains('chip')) return;
+  $('fCat').value = e.target.textContent;
+  [...$('catChips').children].forEach(c => c.classList.toggle('on', c === e.target));
+};
+$('fCat').oninput = () =>
+  [...$('catChips').children].forEach(c => c.classList.toggle('on', c.textContent === $('fCat').value.trim()));
+
+// 참고이미지 (원본 / 결과)
+async function setSlotFile(slot, file) {
+  if (!file || !file.type.startsWith('image/')) { toast('이미지 파일만 넣을 수 있어요'); return; }
+  images[slot] = { dataUrl: await shrink(file, 1600, 0.9) };
+  showImages();
+}
+let hoverSlot = null;   // 마우스가 올라가 있는 칸 (붙여넣기 대상)
+document.querySelectorAll('.img-box').forEach(box => {
+  const slot = box.dataset.slot;
+  box.onclick = e => {
+    if (e.target.classList.contains('img-del')) { images[slot] = null; showImages(); return; }
+    pickingSlot = slot; $('fImg').click();
+  };
+  // PC: 끌어다 놓기
+  box.addEventListener('dragover', e => { e.preventDefault(); box.classList.add('drag'); });
+  box.addEventListener('dragleave', () => box.classList.remove('drag'));
+  box.addEventListener('drop', e => {
+    e.preventDefault(); box.classList.remove('drag');
+    setSlotFile(slot, e.dataTransfer.files[0]);
+  });
+  box.addEventListener('mouseenter', () => { hoverSlot = slot; });
+  box.addEventListener('mouseleave', () => { if (hoverSlot === slot) hoverSlot = null; });
+});
+// 칸 밖에 떨어뜨려도 브라우저가 이미지를 열어버리지 않게
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+
+// PC: Ctrl+V로 이미지 붙여넣기 (마우스를 올린 칸 → 없으면 빈 칸 순서대로)
+document.addEventListener('paste', e => {
+  if (!admin) return;
+  const file = [...(e.clipboardData?.files || [])].find(f => f.type.startsWith('image/'));
+  if (!file) return;   // 글자 붙여넣기는 그대로
+  e.preventDefault();
+  const slot = hoverSlot || (!images.before ? 'before' : !images.after ? 'after' : null);
+  if (!slot) { toast('바꿀 칸에 마우스를 올리고 붙여넣어 주세요'); return; }
+  if (!$('viewInput').offsetParent) goTo('viewInput');
+  setSlotFile(slot, file);
+  toast(`${slot === 'before' ? '원본' : '결과'} 칸에 붙여넣었어요`);
+});
+
+// PC: Ctrl+Enter(맥은 Cmd+Enter)로 저장
+$('form').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('form').requestSubmit(); }
+});
+
+$('fImg').onchange = async e => {
+  const file = e.target.files[0]; if (!file || !pickingSlot) return;
+  await setSlotFile(pickingSlot, file);
+  e.target.value = '';
+};
+function shrink(file, maxSide, quality) {
+  return new Promise(ok => {
+    const img = new Image();
+    img.onload = () => {
+      const r = Math.min(1, maxSide / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src);
+      ok(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+function showImages() {
+  document.querySelectorAll('.img-box').forEach(box => {
+    const v = images[box.dataset.slot];
+    const src = v && (v.dataUrl || imgSrc(v.path));
+    box.classList.toggle('filled', !!src);
+    box.innerHTML = src
+      ? `<img src="${esc(src)}" data-path="${esc(v.path || '')}" alt="" onerror="fixImg(this)"><button type="button" class="img-del" aria-label="이미지 삭제">✕</button>`
+      : '📷<br>눌러서 올리기';
+  });
+}
+showImages();
+
+// ── 수정 ──
+function startEdit(item) {
+  editingId = item.id;
+  $('fTitle').value = item.title || '';
+  $('fCat').value = item.category || '';
+  $('fPrompt').value = item.prompt || '';
+  $('fDesc').value = item.desc || '';
+  images.before = item.imageBefore ? { path: item.imageBefore } : null;
+  images.after = item.imageAfter ? { path: item.imageAfter } : null;
+  showImages(); renderCatChips();
+  $('inputTitle').textContent = '✏️ 프롬프트 수정';
+  $('editNote').hidden = false;
+  $('saveBtn').textContent = '수정 완료';
+  $('cancelEdit').hidden = false;
+  goTo('viewInput');
+  fitPrompt();
+  highlightEditing();
+  if (isWide()) $('fTitle').focus();
+}
+
+// PC: 지금 수정 중인 카드 표시
+function highlightEditing() {
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('editing', Number(c.dataset.id) === editingId));
+}
+
+function resetForm(clearCategory) {
+  editingId = null;
+  $('fTitle').value = ''; $('fPrompt').value = ''; $('fDesc').value = '';
+  if (clearCategory) $('fCat').value = '';
+  images.before = null; images.after = null; showImages();
+  $('inputTitle').textContent = '✏️ 프롬프트 입력';
+  $('editNote').hidden = true;
+  $('saveBtn').textContent = '저장하기';
+  $('cancelEdit').hidden = true;
+  fitPrompt(); renderCatChips(); highlightEditing();
+}
+$('cancelEdit').onclick = () => { resetForm(true); goTo('viewList'); };
+
+// ── 저장 (GitHub에 기록) ──
+$('form').onsubmit = async e => {
+  e.preventDefault();
+  if (busy || !admin) return;
+  const title = $('fTitle').value.trim();
+  const category = $('fCat').value.trim();
+  const prompt = $('fPrompt').value.trim();
+  const desc = $('fDesc').value.trim();
+  if (!title) { toast('제목을 입력해 주세요'); $('fTitle').focus(); return; }
+  if (!prompt) { toast('프롬프트를 입력해 주세요'); $('fPrompt').focus(); return; }
+
+  const wasEditing = editingId !== null;
+  const id = wasEditing ? editingId : Date.now();
+  const stamp = Date.now();
+  const keys = { before: 'imageBefore', after: 'imageAfter' };
+  const uploads = {};
+  for (const slot in keys) {
+    const v = images[slot];
+    if (v && v.dataUrl) uploads[slot] = { path: `${IMG_DIR}/${id}-${slot}-${stamp}.jpg`, base64: v.dataUrl.split(',')[1], dataUrl: v.dataUrl };
+  }
+
+  busy = true; $('saveBtn').disabled = true; $('saveBtn').textContent = '저장 중…';
+  try {
+    items = await GH.commit(`${wasEditing ? '수정' : '추가'}: ${title}`, current => {
+      const old = current.find(i => i.id === id);
+      const now = new Date().toISOString();
+      const rec = { id, title, category, prompt, desc, created: old ? old.created : now };
+      if (old) rec.updated = now;
+      const deletes = [];
+      for (const slot in keys) {
+        const key = keys[slot], v = images[slot], oldPath = old && old[key];
+        if (uploads[slot]) { rec[key] = uploads[slot].path; if (oldPath) deletes.push(oldPath); }
+        else if (v && v.path) rec[key] = v.path;
+        else { rec[key] = null; if (oldPath) deletes.push(oldPath); }
+      }
+      return {
+        items: old ? current.map(i => i.id === id ? rec : i) : [rec, ...current],
+        files: Object.values(uploads).map(u => ({ path: u.path, base64: u.base64 })),
+        deletes
+      };
+    });
+    Object.values(uploads).forEach(u => { imgCache[u.path] = u.dataUrl; });
+    items.sort((a, b) => b.id - a.id);
+    resetForm(wasEditing);
+    render();
+    if (wasEditing) goTo('viewList');
+    if (isWide()) $('fTitle').focus();   // PC: 바로 다음 입력
+    toast(`${wasEditing ? '수정' : '저장'}했어요 ✅ 다른 사람 화면엔 1~2분 뒤 반영돼요`, 2600);
+  } catch (err) {
+    toast(ghError(err), 3000);
+  } finally {
+    busy = false; $('saveBtn').disabled = false;
+    $('saveBtn').textContent = editingId !== null ? '수정 완료' : '저장하기';
+  }
+};
+
+// ── 삭제 ──
+async function deleteItem(item) {
+  if (busy || !admin) return;
+  if (!confirm(`'${item.title || '이 프롬프트'}'을(를) 삭제할까요?\n모든 사용자에게서 사라지고 되돌릴 수 없어요.`)) return;
+  busy = true; toast('삭제 중…', 10000);
+  try {
+    items = await GH.commit(`삭제: ${item.title || item.id}`, current => {
+      const old = current.find(i => i.id === item.id);
+      return {
+        items: current.filter(i => i.id !== item.id),
+        deletes: old ? [old.imageBefore, old.imageAfter].filter(Boolean) : []
+      };
+    });
+    items.sort((a, b) => b.id - a.id);
+    if (editingId === item.id) resetForm(true);
+    render();
+    toast('삭제했어요');
+  } catch (err) {
+    toast(ghError(err), 3000);
+  } finally {
+    busy = false;
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+
+window.addEventListener('resize', () => { clearTimeout(window._rz); window._rz = setTimeout(markLong, 150); });
+
+loadAdmin();
+load();
+</script>
+</body>
+</html>

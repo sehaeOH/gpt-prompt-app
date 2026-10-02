@@ -1,14 +1,15 @@
 {
  "version": 1,
- "updated": "2026-10-02T02:45:18.636Z",
+ "updated": "2026-10-02T02:50:21.622Z",
  "items": [
   {
    "id": 1790909110245,
    "title": "이미지 앵글",
    "category": "이미지",
    "prompt": "/lowangle",
-   "desc": "피사체를 올려다보는 카메라",
+   "desc": "사진 한장 넣고 프롬프트 복 붙 하면 \n피사체를 올려다보는 카메라앵글로 바뀝니다",
    "created": "2026-10-02T02:45:16.490Z",
+   "updated": "2026-10-02T02:50:21.615Z",
    "imageBefore": "data/images/1790909110245-before-1790909110245.jpg",
    "imageAfter": "data/images/1790909110245-after-1790909110245.jpg"
   },

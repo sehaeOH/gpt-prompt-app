@@ -1,7 +1,17 @@
 {
  "version": 1,
- "updated": "2026-10-02T11:50:13.997Z",
+ "updated": "2026-10-03T07:20:30.777Z",
  "items": [
+  {
+   "id": 1791012029249,
+   "title": "플랜",
+   "category": "챗GPT 명령어",
+   "prompt": "/plan",
+   "desc": "여러 단계를 미리 짜는 계획 모드로 전환합니다",
+   "created": "2026-10-03T07:20:30.776Z",
+   "imageBefore": null,
+   "imageAfter": null
+  },
   {
    "id": 1790941607652,
    "title": "음식 인포그래픽",

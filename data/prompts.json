@@ -1,7 +1,17 @@
 {
  "version": 1,
- "updated": "2026-10-03T07:21:21.942Z",
+ "updated": "2026-10-03T07:22:02.030Z",
  "items": [
+  {
+   "id": 1791012120578,
+   "title": "모델",
+   "category": "챗GPT 명령어",
+   "prompt": "/model",
+   "desc": "이 대화에 쓸 모델을 고릅니다",
+   "created": "2026-10-03T07:22:02.030Z",
+   "imageBefore": null,
+   "imageAfter": null
+  },
   {
    "id": 1791012080498,
    "title": "목",

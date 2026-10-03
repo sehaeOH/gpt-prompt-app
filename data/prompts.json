@@ -1,7 +1,17 @@
 {
  "version": 1,
- "updated": "2026-10-03T07:20:30.777Z",
+ "updated": "2026-10-03T07:21:21.942Z",
  "items": [
+  {
+   "id": 1791012080498,
+   "title": "목",
+   "category": "챗GPT 명령어",
+   "prompt": "/goal",
+   "desc": "끝날 때까지 붙잡고 갈 목표를 걸어둡니다 \n(/plan으로 다듬은 뒤 쓰면 좋습니다)",
+   "created": "2026-10-03T07:21:21.942Z",
+   "imageBefore": null,
+   "imageAfter": null
+  },
   {
    "id": 1791012029249,
    "title": "플랜",

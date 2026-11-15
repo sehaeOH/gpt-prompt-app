@@ -1,7 +1,17 @@
 {
  "version": 1,
- "updated": "2026-11-15T09:29:40.927Z",
+ "updated": "2026-11-15T10:18:03.137Z",
  "items": [
+  {
+   "id": 1794737878812,
+   "title": "미니미 sixman이 루돌프타고 선물 주러가장~",
+   "category": "이미지_GPT",
+   "prompt": "LITTLE SANTA — MAGICAL CHRISTMAS DELIVERY\n\nUltra-cute 3D miniature Christmas fantasy | Vertical 9:16 | One image\n\nIDENTITY LOCK\n\nUse the CURRENT uploaded photograph as the ONLY identity reference. Preserve the person's recognizable facial features, original gender, hairstyle, hair color, and distinctive appearance. Never reuse faces from previous generations.\n\nTransform the person into an adorable 3–5-year-old-style miniature chibi character with a large head, tiny body, round cheeks, sparkling eyes, and a joyful smile. Maintain recognizable facial characteristics while creating genuinely childlike proportions, not an adult face on a small body.\n\nSCENE\n\nA magical Christmas Eve above a beautiful snow-covered European village.\n\nThe miniature character is dressed as Santa Claus, riding in an elegant red-and-gold wooden sleigh pulled by one adorable Rudolph reindeer with a softly glowing red nose.\n\nRudolph has fluffy brown fur, small antlers, bright expressive eyes, and a cute red harness decorated with golden bells.\n\nThe sleigh flies high through the snowy night sky, leaving a delicate trail of golden Christmas sparkles.\n\nOUTFIT\n\nClassic luxurious Santa outfit adapted to the character's gender and proportions: fluffy red velvet Santa hat with white fur trim, red winter coat, cream knitted scarf, warm mittens, and tiny winter boots.\n\nKeep the original hairstyle visible naturally beneath the Santa hat.\n\nPOSE\n\nThe character sits securely inside the sleigh, smiling toward the camera. One hand holds the sleigh's side while the other waves excitedly, holding a tiny wrapped Christmas present.\n\nA large red velvet sack overflowing with colorful wrapped gifts sits behind the character.\n\nCOMPOSITION\n\nDynamic three-quarter frontal view, with Rudolph flying slightly ahead and the miniature Santa clearly visible behind.\n\nShow the complete sleigh, Rudolph's full body, and the character without cropping. The character's face must remain clearly recognizable.\n\nBelow them, a picturesque village glows with warm golden window lights, snow-covered rooftops, decorated Christmas trees, and winding streets.\n\nA luminous full moon, distant stars, gentle falling snow, and soft magical sparkles illuminate the deep navy winter sky.\n\nLIGHTING & STYLE\n\nPremium Pixar-like 3D animated movie quality, adorable collectible miniature aesthetic, soft rounded shapes, detailed fabric and fur, realistic snow, warm cinematic Christmas lighting, beautiful depth of field, dreamy atmosphere.\n\nColor palette: Christmas red, warm gold, snowy white, midnight blue, soft cream.\n\nFINAL PRIORITY\n\nCurrent uploaded face identity first. Extremely cute childlike miniature proportions. One Rudolph, one sleigh, one Santa character. Magical flying Christmas gift delivery scene. Full character and reindeer visible. Joyful cinematic Christmas atmosphere.\n\nNo adult facial proportions, no extra people, no duplicate reindeer, no distorted hands, no extra limbs, no text, no watermark.\n\nGenerate exactly ONE vertical 9:16 image.",
+   "desc": "",
+   "created": "2026-11-15T10:18:00.289Z",
+   "imageBefore": "data/images/1794737878812-before-1794737878812.jpg",
+   "imageAfter": "data/images/1794737878812-after-1794737878812.jpg"
+  },
   {
    "id": 1794734976822,
    "title": "그림이 나를 보고 있어 칠판그림으로 만들어주는 프롬프트",
